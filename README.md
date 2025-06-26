@@ -6,6 +6,12 @@ Ever fantasised about living the Norwegian dream? Try this pantomagic virtual "p
 
 A mobile-friendly Next.js (React) game where you drag bottles and cans into a panteautomat (bottle deposit machine) to earn money.
 
+## Screenshots
+
+| Main Screen | Receipt |
+|:-----------:|:-------:|
+| ![Main screen](./screenshots/screenshot-main-screen.PNG) | ![Receipt](./screenshots/screenshot-receipt.PNG) |
+
 ## Features
 
 - Drag-and-drop bottles/cans into the machine
