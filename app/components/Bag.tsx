@@ -12,21 +12,21 @@ interface BagProps {
 }
 
 export const Bag: React.FC<BagProps> = ({ timer, dropZoneRef, onDeposit, bag, setBag }) => {
-  const [dragged, setDragged] = useState<string | null>(null);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const [showBag, setShowBag] = useState(true);
-  const [fadeIn, setFadeIn] = useState(false);
+  const [dragged, setDragged] = useState<string | null>(null); // id of dragged bottle/can
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null); // current pointer position
+  const [showBag, setShowBag] = useState(true); // controls pop in/out effect
+  const [fadeIn, setFadeIn] = useState(false); // triggers fade-in animation
   const bagRef = useRef<HTMLDivElement | null>(null);
   const MAX_BOTTLES = 6;
 
-  // Generate initial bag only on client after mount
+  // Only generate initial bag on client after mount
   useEffect(() => {
     if (typeof window !== "undefined" && bag === null) {
       setBag(generateBag());
     }
   }, [bag]);
 
-  // Generate new bag when bag is empty & timer > 0
+  // When bag is empty and timer is running, pop out and in a new bag
   useEffect(() => {
     if (bag && bag.length === 0 && timer > 0) {
       setShowBag(false);
@@ -34,8 +34,8 @@ export const Bag: React.FC<BagProps> = ({ timer, dropZoneRef, onDeposit, bag, se
       setTimeout(() => {
         setBag(generateBag());
         setShowBag(true);
-        setTimeout(() => setFadeIn(true), 10); // trigger fade-in after mount
-      }, 180); // Hide for 180ms
+        setTimeout(() => setFadeIn(true), 10); // allow DOM to mount before animating
+      }, 180);
     }
   }, [bag, timer, setBag]);
 
@@ -77,13 +77,13 @@ export const Bag: React.FC<BagProps> = ({ timer, dropZoneRef, onDeposit, bag, se
             draggable={false}
             style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none", position: "absolute", left: 0, top: 0, zIndex: 1 }}
           />
-          {/* Placement zone for bottles/cans - adjust these values as needed */}
+          {/* Placement zone for bottles/cans. Adjust zone to fit bag image. */}
           {(() => {
             const zone = {
-              left: 60, // px from left of bag
-              top: 70,  // px from top of bag
-              width: 140, // px
-              height: 120 // px
+              left: 60,
+              top: 70,
+              width: 140,
+              height: 120
             };
             return (
               <div
@@ -101,8 +101,7 @@ export const Bag: React.FC<BagProps> = ({ timer, dropZoneRef, onDeposit, bag, se
               />
             );
           })()}
-          {/* Place bottles/cans randomly within the zone */}
-          {bag && bag.slice(0, MAX_BOTTLES).map((bottle: Bottle, i: number) => {
+          {bag && bag.slice(0, MAX_BOTTLES).map((bottle: Bottle) => {
             const isDragging = dragged === bottle.id;
             // Placement zone (must match above)
             const zone = {
@@ -111,13 +110,14 @@ export const Bag: React.FC<BagProps> = ({ timer, dropZoneRef, onDeposit, bag, se
               width: 140,
               height: 120
             };
+            // Deterministic pseudo-random for stable bottle/can placement
             function pseudoRandom(seed: string, min: number, max: number) {
               let hash = 0;
               for (let j = 0; j < seed.length; j++) hash = ((hash << 5) - hash) + seed.charCodeAt(j);
               const norm = Math.abs(Math.sin(hash)) % 1;
               return min + norm * (max - min);
             }
-            // Random x/y within the zone
+            // Random x/y within the zone, keeping bottles/cans inside
             const x = pseudoRandom(bottle.id, 0, 1);
             const y = pseudoRandom(bottle.id + "y", 0, 1);
             const maxW = bottle.type === "small" ? 50 : 80;
